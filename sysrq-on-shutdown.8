@@ -1,0 +1,110 @@
+.\" Manpage for sysrq-on-shutdown.
+.TH SYSRQ-ON-SHUTDOWN 8 "2026-10-16" "sysrq-on-shutdown 1.0.0" "System Administration"
+.SH NAME
+sysrq-on-shutdown \- enable full SysRq keys during shutdown and reboot
+.SH SYNOPSIS
+.B systemctl
+.RI enable " sysrq\-on\-shutdown.service"
+.br
+.B systemctl
+.RI start " sysrq\-on\-shutdown.service"
+.SH DESCRIPTION
+.B sysrq-on-shutdown.service
+is a oneshot unit that writes
+.B 1
+to
+.IR /proc/sys/kernel/sysrq .
+This enables every SysRq command for the remainder of the shutdown or reboot
+sequence, so that the magic key combinations
+.RB ( Alt + SysRq + key ,
+or a character written to
+.IR /proc/sysrq-trigger )
+keep working while the system is bringing services and storage down.
+.PP
+Many distributions ship a restricted default value for
+.IR kernel.sysrq ,
+which masks some commands such as
+.BR b " (reboot), " o " (power off) and " s " (sync)."
+On Arch Linux the kernel default is
+.BR 16 ,
+which enables only the
+.B sync
+command. By raising the value to
+.B 1
+immediately before
+.BR shutdown.target ,
+the emergency key set stays available for the whole shutdown path.
+.PP
+The unit is ordered
+.B Before=shutdown.target
+and built with
+.BR DefaultDependencies=no ,
+so it runs early in the shutdown transaction, after the regular
+.B shutdown.target
+dependencies are no longer required.
+.SH ENABLING
+The service is intentionally not enabled on installation. Enable it explicitly:
+.PP
+.nf
+    # systemctl enable sysrq-on-shutdown.service
+.fi
+.PP
+To also apply it to the current boot without waiting for a reboot:
+.PP
+.nf
+    # systemctl start sysrq-on-shutdown.service
+.fi
+.PP
+Check the current value at any time with:
+.PP
+.nf
+    $ cat /proc/sys/kernel/sysrq
+.fi
+.SH FILES
+.TP
+.I /usr/lib/systemd/system/sysrq-on-shutdown.service
+The systemd unit installed by this package.
+.TP
+.I /proc/sys/kernel/sysrq
+Runtime control of the SysRq key set; see
+.BR proc_sysrq (2)
+and
+.BR sysrq (2)
+in the kernel documentation
+.RI ( Documentation/admin\-guide/sysrq.rst ).
+.TP
+.I /etc/sysctl.d/*.conf
+Persistent SysRq configuration. A local override such as
+.B kernel.sysrq = 1
+achieves a similar effect for the entire run time, whereas this unit only
+raises the value while shutting down.
+.SH SECURITY
+Enabling the full SysRq set lets any user with access to the console (or root)
+force a reboot, kill processes, or dump kernel state without a clean unmount.
+Enabling this unit only for the shutdown path limits that window to shutdown and
+reboot, which is the intended trade-off.
+.SH EXAMPLES
+Enable the hook and verify it is queued for shutdown:
+.PP
+.nf
+    # systemctl enable sysrq-on-shutdown.service
+    # systemctl status sysrq-on-shutdown.service
+.fi
+.PP
+Trigger the full SysRq set manually for testing:
+.PP
+.nf
+    # echo 1 > /proc/sys/kernel/sysrq
+.fi
+.SH SEE ALSO
+.BR systemctl (1),
+.BR systemd.special (7),
+.BR systemd.service (5),
+.BR proc_sysrq (2),
+.BR sysrq (2),
+.BR sysctl.d (5)
+.SH AUTHOR
+Azote <azote@outlook.jp>
+.SH LICENSE
+CC0-1.0. To the extent possible under law, the author has waived all copyright
+and related or neighboring rights to this work.

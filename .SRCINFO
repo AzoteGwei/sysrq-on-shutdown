@@ -1,0 +1,15 @@
+pkgbase = sysrq-on-shutdown
+	pkgdesc = Systemd service to enable full SysRq keys during shutdown and reboot
+	pkgver = 1.0.0
+	pkgrel = 1
+	url = https://github.com/azotegwei/sysrq-on-shutdown
+	install = sysrq-on-shutdown.install
+	arch = any
+	license = CC0-1.0
+	depends = systemd
+	source = sysrq-on-shutdown.service
+	source = sysrq-on-shutdown.8
+	sha256sums = d3311f9dc62b6edd9872493a6f4469097a7c11ce8e36a89be8b466b418cedf20
+	sha256sums = 30cfcfd6ac2613a6ddc8a526dcf92868a14226550c681f25f0c0d0b656bf62c1
+
+pkgname = sysrq-on-shutdown

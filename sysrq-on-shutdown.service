@@ -1,0 +1,13 @@
+[Unit]
+Description=Enable full SysRq on shutdown and reboot
+Documentation=man:sysrq-on-shutdown(8) man:systemd.special(7)
+DefaultDependencies=no
+Before=shutdown.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'echo 1 > /proc/sys/kernel/sysrq'
+TimeoutSec=10
+
+[Install]
+WantedBy=shutdown.target
